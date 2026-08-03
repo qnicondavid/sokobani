@@ -5,52 +5,59 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Project information -->
     <groupId>com.milandru.nicon_david</groupId>
-    <artifactId>Sokobani</artifactId>
-    <version>5.0-SNAPSHOT</version>
+    <artifactId>sokobani</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
 
-    <!-- Java and JavaFX versions -->
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>22</javafx.version>
+        <junit.version>5.11.4</junit.version>
+        <surefire.version>3.5.2</surefire.version>
     </properties>
 
-    <!-- Dependencies -->
     <dependencies>
 
-        <!-- JavaFX Controls -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
 
-        <!-- JavaFX Graphics (needed for windows) -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
 
-    <!-- Build plugins -->
     <build>
         <plugins>
-            <!-- JavaFX Plugin -->
+
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <!-- Your main class -->
-                    <mainClass>Week6.Main</mainClass>
+                    <mainClass>Sokobani.SokobaniApp</mainClass>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+            </plugin>
+
         </plugins>
     </build>
 
