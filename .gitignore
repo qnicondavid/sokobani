@@ -1,0 +1,28 @@
+# Build output
+target/
+*.class
+
+# Planning, notes, prompts, audits — never pushed
+.dev/
+CLAUDE.md
+.claude/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+nbproject/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Runtime data
+.sokobani/
+*.log
