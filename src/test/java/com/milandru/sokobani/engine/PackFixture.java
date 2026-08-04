@@ -1,5 +1,6 @@
 package com.milandru.sokobani.engine;
 
+import com.milandru.sokobani.core.Direction;
 import com.milandru.sokobani.core.Level;
 import com.milandru.sokobani.level.InvalidLevelFormatException;
 import com.milandru.sokobani.level.LevelPack;
@@ -76,5 +77,20 @@ final class PackFixture {
 
     static GameSession session(String layout) {
         return new GameSession(pack(layout));
+    }
+
+    static void solveOnePush(GameSession session) {
+        for (Direction direction : List.of(Direction.RIGHT, Direction.RIGHT, Direction.RIGHT)) {
+            session.move(direction);
+        }
+    }
+
+    static void solveTwoBoxes(GameSession session) {
+        for (Direction direction : List.of(
+                Direction.RIGHT, Direction.RIGHT, Direction.RIGHT,
+                Direction.LEFT, Direction.LEFT, Direction.DOWN,
+                Direction.RIGHT, Direction.RIGHT)) {
+            session.move(direction);
+        }
     }
 }

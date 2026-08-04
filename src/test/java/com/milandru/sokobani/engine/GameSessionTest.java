@@ -146,6 +146,7 @@ class GameSessionTest {
     @Test
     void restart_afterSeveralMoves_staysOnTheSameLevel() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES));
+        PackFixture.solveOnePush(session);
         session.loadLevel(1);
         session.move(Direction.RIGHT);
 
@@ -158,7 +159,7 @@ class GameSessionTest {
     @Test
     void loadLevel_anotherIndex_switchesTheLevelAndZeroesTheCounters() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES));
-        session.move(Direction.RIGHT);
+        PackFixture.solveOnePush(session);
 
         session.loadLevel(1);
 
@@ -190,6 +191,7 @@ class GameSessionTest {
     @Test
     void nextLevel_withALevelRemaining_advancesAndReportsTrue() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES));
+        PackFixture.solveOnePush(session);
 
         assertTrue(session.nextLevel());
         assertEquals(1, session.levelIndex());
@@ -199,6 +201,7 @@ class GameSessionTest {
     @Test
     void nextLevel_onTheLastLevel_reportsFalseAndStaysPut() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES));
+        PackFixture.solveOnePush(session);
         session.loadLevel(1);
         session.move(Direction.RIGHT);
 
@@ -213,8 +216,10 @@ class GameSessionTest {
                 PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES, PackFixture.OPEN_ROOM));
 
         assertTrue(session.hasNextLevel());
+        PackFixture.solveOnePush(session);
         session.nextLevel();
         assertTrue(session.hasNextLevel());
+        PackFixture.solveTwoBoxes(session);
         session.nextLevel();
         assertFalse(session.hasNextLevel());
     }
@@ -232,6 +237,7 @@ class GameSessionTest {
     void currentLevel_anySession_isTheLevelAtTheCurrentIndex() {
         LevelPack pack = PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES);
         GameSession session = new GameSession(pack);
+        PackFixture.solveOnePush(session);
 
         session.nextLevel();
 

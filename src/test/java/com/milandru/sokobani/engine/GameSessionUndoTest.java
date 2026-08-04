@@ -150,8 +150,7 @@ class GameSessionUndoTest {
     @Test
     void undo_afterLoadingALevel_reportsFalseBecauseLoadingClearedTheHistory() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES));
-        session.move(Direction.RIGHT);
-        session.move(Direction.RIGHT);
+        PackFixture.solveOnePush(session);
 
         session.loadLevel(1);
 
@@ -163,7 +162,7 @@ class GameSessionUndoTest {
     @Test
     void undo_afterAdvancingToTheNextLevel_reportsFalseBecauseTheHistoryWasCleared() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES));
-        session.move(Direction.RIGHT);
+        PackFixture.solveOnePush(session);
 
         assertTrue(session.nextLevel());
 

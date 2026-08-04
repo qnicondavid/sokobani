@@ -199,6 +199,7 @@ class GameSessionEventTest {
     @Test
     void loadLevel_anotherIndex_firesLevelLoadedCarryingTheNewLevel() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.TWO_BOXES));
+        PackFixture.solveOnePush(session);
         List<GameEvent> events = recorded(session);
 
         session.loadLevel(1);
@@ -219,6 +220,7 @@ class GameSessionEventTest {
     @Test
     void loadLevel_aLevelThatIsAlreadySolved_firesLevelLoadedWithoutSolved() {
         GameSession session = new GameSession(PackFixture.pack(PackFixture.ONE_PUSH, PackFixture.ALREADY_SOLVED));
+        PackFixture.solveOnePush(session);
         List<GameEvent> events = recorded(session);
 
         session.loadLevel(1);

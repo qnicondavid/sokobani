@@ -7,6 +7,8 @@ import com.milandru.sokobani.core.MoveResult;
 import com.milandru.sokobani.core.Position;
 import com.milandru.sokobani.core.SokobanRules;
 import com.milandru.sokobani.level.LevelPack;
+import com.milandru.sokobani.persistence.Progress;
+import com.milandru.sokobani.persistence.ProgressStore;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -18,18 +20,27 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public final class GameSession {
 
     private final LevelPack pack;
+    private final Optional<ProgressStore> store;
     private final Deque<MoveRecord> history = new ArrayDeque<>();
     private final List<GameEventListener> listeners = new CopyOnWriteArrayList<>();
 
     private int levelIndex;
     private GameState state;
     private boolean solvedAnnounced;
+    private Progress progress;
+    private boolean lastSaveSucceeded = true;
 
     public GameSession(LevelPack pack) {
+        this(pack, null);
+    }
+
+    public GameSession(LevelPack pack, ProgressStore store) {
         this.pack = Objects.requireNonNull(pack, "pack");
         if (pack.size() == 0) {
             throw new IllegalArgumentException("pack " + pack.name() + " has no levels");
         }
+        this.store = Optional.ofNullable(store);
+        this.progress = this.store.map(ProgressStore::load).orElseGet(Progress::empty);
         beginLevel(0);
     }
 
@@ -85,6 +96,14 @@ public final class GameSession {
     }
 
     public void loadLevel(int index) {
+        if (index < 0 || index >= pack.size()) {
+            throw new IndexOutOfBoundsException(
+                    "level index " + index + " out of range for pack of size " + pack.size());
+        }
+        if (!progress.isUnlocked(index)) {
+            throw new IllegalStateException(
+                    "level " + index + " is locked; the furthest unlocked level is " + progress.unlockedIndex());
+        }
         beginLevel(index);
         fire(new GameEvent.LevelLoaded(currentLevel()));
     }
@@ -133,6 +152,14 @@ public final class GameSession {
         return !history.isEmpty();
     }
 
+    public Progress progress() {
+        return progress;
+    }
+
+    public boolean lastSaveSucceeded() {
+        return lastSaveSucceeded;
+    }
+
     private void beginLevel(int index) {
         Level level = pack.get(index);
         levelIndex = index;
@@ -144,9 +171,15 @@ public final class GameSession {
     private void announceSolvedOnEntry() {
         boolean solved = state.isSolved();
         if (solved && !solvedAnnounced) {
+            recordSolve();
             fire(new GameEvent.Solved(currentLevel(), state.moveCount(), state.pushCount()));
         }
         solvedAnnounced = solved;
+    }
+
+    private void recordSolve() {
+        progress = progress.withSolved(levelIndex, state.moveCount(), state.pushCount());
+        lastSaveSucceeded = store.map(persisted -> persisted.save(progress)).orElse(true);
     }
 
     private void fire(GameEvent event) {
