@@ -1,7 +1,10 @@
 package com.milandru.sokobani.level;
 
+import com.milandru.sokobani.core.Direction;
+import com.milandru.sokobani.core.GameState;
 import com.milandru.sokobani.core.Level;
 import com.milandru.sokobani.core.Position;
+import com.milandru.sokobani.core.SokobanRules;
 import com.milandru.sokobani.core.Tile;
 import org.junit.jupiter.api.Test;
 
@@ -323,8 +326,36 @@ class LevelParserTest {
     }
 
     @Test
-    void toXsb_null_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> LevelParser.toXsb(null));
+    void toXsb_nullLevel_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> LevelParser.toXsb((Level) null));
+    }
+
+    @Test
+    void toXsb_nullState_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> LevelParser.toXsb((GameState) null));
+    }
+
+    @Test
+    void toXsb_aStateThatHasMoved_writesWhereThePlayerAndBoxesAreNow() throws Exception {
+        Level level = LevelParser.parse("""
+                #######
+                #@$  .#
+                #######""");
+        GameState state = new GameState(level);
+        SokobanRules.apply(state, Direction.RIGHT);
+
+        assertEquals("""
+                #######
+                # @$ .#
+                #######
+                """, LevelParser.toXsb(state));
+    }
+
+    @Test
+    void toXsb_aStateAtItsOpeningPosition_writesTheSameGridAsItsLevel() throws Exception {
+        Level level = LevelParser.parse(RAGGED);
+
+        assertEquals(LevelParser.toXsb(level), LevelParser.toXsb(new GameState(level)));
     }
 
     @Test

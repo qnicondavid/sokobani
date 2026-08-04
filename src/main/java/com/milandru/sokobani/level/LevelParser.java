@@ -1,6 +1,7 @@
 package com.milandru.sokobani.level;
 
 import com.milandru.sokobani.core.Direction;
+import com.milandru.sokobani.core.GameState;
 import com.milandru.sokobani.core.Level;
 import com.milandru.sokobani.core.Position;
 import com.milandru.sokobani.core.Tile;
@@ -100,23 +101,32 @@ public final class LevelParser {
 
     public static String toXsb(Level level) {
         Objects.requireNonNull(level, "level");
+        return grid(level, level.initialPlayer(), level.initialBoxes());
+    }
+
+    public static String toXsb(GameState state) {
+        Objects.requireNonNull(state, "state");
+        return grid(state.level(), state.player(), state.boxes());
+    }
+
+    private static String grid(Level level, Position player, Set<Position> boxes) {
         StringBuilder text = new StringBuilder();
         for (int row = 0; row < level.rowCount(); row++) {
             for (int col = 0; col < level.columnCount(); col++) {
-                text.append(symbolAt(level, new Position(row, col)));
+                text.append(symbolAt(level, new Position(row, col), player, boxes));
             }
             text.append('\n');
         }
         return text.toString();
     }
 
-    private static char symbolAt(Level level, Position position) {
+    private static char symbolAt(Level level, Position position, Position player, Set<Position> boxes) {
         Tile tile = level.tileAt(position);
         boolean onGoal = tile == Tile.GOAL;
-        if (level.initialBoxes().contains(position)) {
+        if (boxes.contains(position)) {
             return onGoal ? BOX_ON_GOAL : BOX;
         }
-        if (level.initialPlayer().equals(position)) {
+        if (player.equals(position)) {
             return onGoal ? PLAYER_ON_GOAL : PLAYER;
         }
         return switch (tile) {
