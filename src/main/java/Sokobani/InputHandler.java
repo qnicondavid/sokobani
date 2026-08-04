@@ -49,7 +49,7 @@ public class InputHandler {
      * @param map the game map to be reset
      */
     public void fireRestart(GameMap map) {
-        map.restart("src/main/resources/level1.txt"); 
+        map.restart();
     }
 
     /**

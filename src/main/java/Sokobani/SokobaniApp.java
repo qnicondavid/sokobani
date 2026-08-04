@@ -25,9 +25,6 @@ public class SokobaniApp extends Application {
     /** Size of each tile in pixels */
     private static final int TILE_SIZE = 64;
 
-    /** Path to the initial level file */
-    private static final String LEVEL_FILE = "src/main/resources/level1.txt";
-
     /**
      * JavaFX entry point. Sets up the scene, initializes the map and grid,
      * subscribes to game events, and handles keyboard input.
@@ -37,7 +34,6 @@ public class SokobaniApp extends Application {
     @Override
     public void start(Stage stage) {
         map = new GameMap();
-        map.loadLevel(LEVEL_FILE);
 
         grid = new GridPane();
         grid.setHgap(0);

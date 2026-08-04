@@ -57,7 +57,7 @@ public class Game {
 
                 case "load" -> {
                     if (filename == null) {
-                        System.out.print("Enter filename (default: level1.txt): ");
+                        System.out.print("Enter filename of a saved game: ");
                         filename = in.nextLine().trim();
                     }
                     try {
