@@ -67,6 +67,19 @@ public final class GameState {
         pushCount++;
     }
 
+    void revertMove(Position origin) {
+        player = origin;
+        moveCount--;
+    }
+
+    void revertPush(Position origin, Position boxOrigin, Position boxDestination) {
+        boxes.remove(boxDestination);
+        boxes.add(boxOrigin);
+        player = origin;
+        moveCount--;
+        pushCount--;
+    }
+
     @Override
     public boolean equals(Object other) {
         return other instanceof GameState state
