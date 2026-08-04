@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -105,6 +106,19 @@ class GameSessionProgressTest {
         assertThrows(IllegalStateException.class, () -> session.loadLevel(2));
 
         assertEquals(0, session.levelIndex());
+    }
+
+    @Test
+    void loadLevel_aLockedIndex_namesTheLockedLevelAndTheFurthestOneUnlocked() {
+        LevelPack pack = new LevelPack("fixture", List.of(
+                PackFixture.level(PackFixture.ONE_PUSH, "Opening", 0),
+                PackFixture.level(PackFixture.TWO_BOXES, "Corner", 1),
+                PackFixture.level(PackFixture.OPEN_ROOM, "Alcove", 2)));
+        GameSession session = new GameSession(pack);
+
+        IllegalStateException locked = assertThrows(IllegalStateException.class, () -> session.loadLevel(2));
+
+        assertEquals("Alcove is locked; the furthest level unlocked is Opening", locked.getMessage());
     }
 
     @Test

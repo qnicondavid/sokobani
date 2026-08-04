@@ -101,8 +101,8 @@ public final class GameSession {
                     "level index " + index + " out of range for pack of size " + pack.size());
         }
         if (!progress.isUnlocked(index)) {
-            throw new IllegalStateException(
-                    "level " + index + " is locked; the furthest unlocked level is " + progress.unlockedIndex());
+            throw new IllegalStateException(pack.get(index).name() + " is locked; the furthest level unlocked is "
+                    + pack.get(progress.unlockedIndex()).name());
         }
         beginLevel(index);
         fire(new GameEvent.LevelLoaded(currentLevel()));
