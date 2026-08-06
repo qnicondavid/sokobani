@@ -63,6 +63,45 @@ class SurfaceTest {
     }
 
     @Test
+    void everyToneTakingPrimitive_outOfRangeTone_throws() {
+        Surface surface = new Surface(20, 20);
+
+        assertThrows(IllegalArgumentException.class, () -> surface.fill(0, 0, 5, 5, 300));
+        assertThrows(IllegalArgumentException.class, () -> surface.box(0, 0, 5, 5, 1, 300));
+        assertThrows(IllegalArgumentException.class, () -> surface.hatchVertical(0, 0, 5, 5, 2, 300));
+        assertThrows(IllegalArgumentException.class, () -> surface.hatchHorizontal(0, 0, 5, 5, 2, 300));
+        assertThrows(IllegalArgumentException.class, () -> surface.hatchDiagonal(0, 0, 5, 5, 2, 300));
+        assertThrows(IllegalArgumentException.class, () -> surface.stipple(0, 0, 5, 5, 1.0, 300));
+        assertThrows(IllegalArgumentException.class, () -> surface.ring(10, 10, 5, 300));
+        assertThrows(IllegalArgumentException.class, () -> surface.blend(2, 2, 300, 1.0));
+    }
+
+    @Test
+    void everyToneTakingPrimitive_negativeTone_throws() {
+        Surface surface = new Surface(20, 20);
+
+        assertThrows(IllegalArgumentException.class, () -> surface.fill(0, 0, 5, 5, -1));
+        assertThrows(IllegalArgumentException.class, () -> surface.box(0, 0, 5, 5, 1, -1));
+        assertThrows(IllegalArgumentException.class, () -> surface.hatchVertical(0, 0, 5, 5, 2, -1));
+        assertThrows(IllegalArgumentException.class, () -> surface.hatchHorizontal(0, 0, 5, 5, 2, -1));
+        assertThrows(IllegalArgumentException.class, () -> surface.hatchDiagonal(0, 0, 5, 5, 2, -1));
+        assertThrows(IllegalArgumentException.class, () -> surface.stipple(0, 0, 5, 5, 1.0, -1));
+        assertThrows(IllegalArgumentException.class, () -> surface.ring(10, 10, 5, -1));
+        assertThrows(IllegalArgumentException.class, () -> surface.blend(2, 2, -1, 1.0));
+    }
+
+    @Test
+    void invert_afterEveryPrimitive_isItsOwnInverse() {
+        Surface surface = SurfacePatterns.draw();
+        int[] before = surface.tones();
+
+        surface.invert(0, 0, surface.width(), surface.height());
+        surface.invert(0, 0, surface.width(), surface.height());
+
+        assertArrayEquals(before, surface.tones());
+    }
+
+    @Test
     void box_paintsExactlyTheBorderRegion() {
         Surface surface = new Surface(10, 10);
         int x = 1;
@@ -242,6 +281,15 @@ class SurfaceTest {
 
         assertThrows(IllegalArgumentException.class, () -> surface.blend(2, 2, Surface.INK, -0.1));
         assertThrows(IllegalArgumentException.class, () -> surface.blend(2, 2, Surface.INK, 1.5));
+    }
+
+    @Test
+    void blend_coverageThatIsNotANumber_throws() {
+        Surface surface = new Surface(5, 5);
+
+        assertThrows(IllegalArgumentException.class, () -> surface.blend(2, 2, Surface.INK, Double.NaN));
+
+        assertEquals(Surface.PAPER, surface.toneAt(2, 2));
     }
 
     @Test
