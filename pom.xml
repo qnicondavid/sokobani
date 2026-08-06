@@ -37,7 +37,9 @@
         <surefire.version>3.5.2</surefire.version>
         <enforcer.version>3.5.0</enforcer.version>
         <shade.version>3.6.0</shade.version>
-        <main.class>com.milandru.sokobani.ui.console.ConsoleGame</main.class>
+        <exec.version>3.5.0</exec.version>
+        <main.class>com.milandru.sokobani.ui.fx.Launcher</main.class>
+        <console.class>com.milandru.sokobani.ui.console.ConsoleGame</console.class>
     </properties>
 
     <dependencies>
@@ -107,12 +109,29 @@
             </plugin>
 
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${exec.version}</version>
+                <executions>
+                    <execution>
+                        <id>console</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>${console.class}</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>${shade.version}</version>
                 <executions>
                     <execution>
-                        <id>shade-console-jar</id>
+                        <id>shade-runnable-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
@@ -120,11 +139,7 @@
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>shaded</shadedClassifierName>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.openjfx:*</exclude>
-                                </excludes>
-                            </artifactSet>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${main.class}</mainClass>
