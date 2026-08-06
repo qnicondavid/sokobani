@@ -8,6 +8,8 @@ import java.util.Objects;
 
 public final class ProgressStore {
 
+    private static final String DIRECTORY_NAME = ".sokobani";
+
     private final Path directory;
     private final Path file;
 
@@ -16,8 +18,12 @@ public final class ProgressStore {
         this.file = directory.resolve("progress.json");
     }
 
+    public static Path userHomeDirectory() {
+        return Path.of(System.getProperty("user.home"), DIRECTORY_NAME);
+    }
+
     public static ProgressStore atUserHome() {
-        return new ProgressStore(Path.of(System.getProperty("user.home"), ".sokobani"));
+        return new ProgressStore(userHomeDirectory());
     }
 
     public Progress load() {
