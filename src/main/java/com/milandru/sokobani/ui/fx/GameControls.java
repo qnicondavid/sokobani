@@ -12,7 +12,11 @@ public final class GameControls {
     public enum Mode {
         PLAYING,
         PAUSED,
-        SOLVED
+        SOLVED,
+        MENU,
+        ROOMS,
+        HOW_TO,
+        SETTINGS
     }
 
     public enum Command {
@@ -25,6 +29,10 @@ public final class GameControls {
         PAUSE,
         RESUME,
         NEXT_ROOM,
+        PAGE_UP,
+        PAGE_DOWN,
+        CONFIRM,
+        BACK,
         CYCLE_THEME,
         IGNORED
     }
@@ -37,6 +45,10 @@ public final class GameControls {
             case PLAYING -> whilePlaying(code, shortcutDown);
             case PAUSED -> whilePaused(code);
             case SOLVED -> whileSolved(code);
+            case MENU -> whileMenu(code);
+            case ROOMS -> whileRooms(code, shortcutDown);
+            case HOW_TO -> whileHowTo(code);
+            case SETTINGS -> whileSettings(code);
         };
     }
 
@@ -46,7 +58,8 @@ public final class GameControls {
             case MOVE_DOWN -> Optional.of(Direction.DOWN);
             case MOVE_LEFT -> Optional.of(Direction.LEFT);
             case MOVE_RIGHT -> Optional.of(Direction.RIGHT);
-            case UNDO, RESTART, PAUSE, RESUME, NEXT_ROOM, CYCLE_THEME, IGNORED -> Optional.empty();
+            case UNDO, RESTART, PAUSE, RESUME, NEXT_ROOM, PAGE_UP, PAGE_DOWN, CONFIRM, BACK,
+                    CYCLE_THEME, IGNORED -> Optional.empty();
         };
     }
 
@@ -78,6 +91,9 @@ public final class GameControls {
 
     private static Command whilePaused(KeyCode code) {
         return switch (code) {
+            case W, UP -> Command.MOVE_UP;
+            case S, DOWN -> Command.MOVE_DOWN;
+            case ENTER -> Command.CONFIRM;
             case ESCAPE -> Command.RESUME;
             case R -> Command.RESTART;
             case T -> Command.CYCLE_THEME;
@@ -89,6 +105,52 @@ public final class GameControls {
         return switch (code) {
             case N -> Command.NEXT_ROOM;
             case R -> Command.RESTART;
+            case ENTER -> Command.CONFIRM;
+            case ESCAPE -> Command.BACK;
+            case T -> Command.CYCLE_THEME;
+            default -> Command.IGNORED;
+        };
+    }
+
+    private static Command whileMenu(KeyCode code) {
+        return switch (code) {
+            case W, UP -> Command.MOVE_UP;
+            case S, DOWN -> Command.MOVE_DOWN;
+            case ENTER -> Command.CONFIRM;
+            case T -> Command.CYCLE_THEME;
+            default -> Command.IGNORED;
+        };
+    }
+
+    private static Command whileRooms(KeyCode code, boolean shortcutDown) {
+        return switch (code) {
+            case PAGE_UP -> Command.PAGE_UP;
+            case PAGE_DOWN -> Command.PAGE_DOWN;
+            case W, UP -> shortcutDown ? Command.PAGE_UP : Command.MOVE_UP;
+            case S, DOWN -> shortcutDown ? Command.PAGE_DOWN : Command.MOVE_DOWN;
+            case A, LEFT -> Command.MOVE_LEFT;
+            case D, RIGHT -> Command.MOVE_RIGHT;
+            case ENTER -> Command.CONFIRM;
+            case ESCAPE -> Command.BACK;
+            case T -> Command.CYCLE_THEME;
+            default -> Command.IGNORED;
+        };
+    }
+
+    private static Command whileHowTo(KeyCode code) {
+        return switch (code) {
+            case ESCAPE -> Command.BACK;
+            case T -> Command.CYCLE_THEME;
+            default -> Command.IGNORED;
+        };
+    }
+
+    private static Command whileSettings(KeyCode code) {
+        return switch (code) {
+            case W, UP -> Command.MOVE_UP;
+            case S, DOWN -> Command.MOVE_DOWN;
+            case ENTER -> Command.CONFIRM;
+            case ESCAPE -> Command.BACK;
             case T -> Command.CYCLE_THEME;
             default -> Command.IGNORED;
         };
