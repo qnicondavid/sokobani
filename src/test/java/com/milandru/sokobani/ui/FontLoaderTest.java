@@ -13,7 +13,7 @@ class FontLoaderTest {
 
     @Test
     void strokeWidthFor_theSizeItWasChosenAt_isTheOriginalNineTenths() {
-        assertEquals(0.9, FontLoader.strokeWidthFor(FIGURE_SIZE), 0.0001);
+        assertEquals(0.9, FontLoader.strokeWidthFor(FIGURE_SIZE));
     }
 
     @Test
