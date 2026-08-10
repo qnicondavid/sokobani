@@ -18,7 +18,8 @@ import java.util.Map;
 public final class FontLoader implements GlyphRasterizer {
 
     private static final String RESOURCE_PATH = "/fonts/RobotoSlab-Bold.ttf";
-    private static final double STROKE_WIDTH = 0.9;
+    private static final double STROKE_AT_REFERENCE_SIZE = 0.9;
+    private static final int STROKE_REFERENCE_SIZE = 17;
 
     private final String family;
     private final Map<Long, Double> advanceCache = new HashMap<>();
@@ -37,6 +38,10 @@ public final class FontLoader implements GlyphRasterizer {
         } catch (IOException e) {
             throw new IllegalStateException("failed to read bundled font: " + RESOURCE_PATH, e);
         }
+    }
+
+    public static double strokeWidthFor(int size) {
+        return STROKE_AT_REFERENCE_SIZE * size / STROKE_REFERENCE_SIZE;
     }
 
     @Override
@@ -70,7 +75,7 @@ public final class FontLoader implements GlyphRasterizer {
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, canvasSize, canvasSize);
         gc.setFont(Font.font(family, FontWeight.BOLD, size));
-        gc.setLineWidth(STROKE_WIDTH);
+        gc.setLineWidth(strokeWidthFor(size));
         gc.setLineJoin(StrokeLineJoin.ROUND);
         gc.setStroke(Color.BLACK);
         gc.setFill(Color.BLACK);
