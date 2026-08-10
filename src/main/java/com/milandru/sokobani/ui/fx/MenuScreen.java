@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class MenuScreen extends BaseScreen {
 
@@ -31,6 +32,8 @@ public final class MenuScreen extends BaseScreen {
             MenuView.Item.QUIT));
 
     private final Map<Integer, String> solutions = new ConcurrentHashMap<>();
+
+    private final AtomicInteger passesWalking = new AtomicInteger();
 
     private volatile MenuBoard board;
     private volatile boolean showing;
@@ -71,6 +74,18 @@ public final class MenuScreen extends BaseScreen {
             timeline.stop();
             timeline = null;
         }
+    }
+
+    MenuBoard board() {
+        return board;
+    }
+
+    boolean animating() {
+        return timeline != null && timeline.getStatus() == Animation.Status.RUNNING;
+    }
+
+    boolean solving() {
+        return passesWalking.get() > 0;
     }
 
     @Override
@@ -128,22 +143,31 @@ public final class MenuScreen extends BaseScreen {
     }
 
     private void solveOn(MenuBoard target) {
-        for (int index = 0; index < session.pack().size(); index++) {
-            if (!showing || board != target) {
-                return;
+        passesWalking.incrementAndGet();
+        try {
+            for (int index = 0; index < session.pack().size(); index++) {
+                if (abandoned(target)) {
+                    return;
+                }
+                if (!target.solved(index) || solutions.containsKey(index)) {
+                    continue;
+                }
+                try {
+                    int roomIndex = index;
+                    Solver.solve(session.pack().get(index), () -> abandoned(target)).ifPresent(solution -> {
+                        solutions.put(roomIndex, solution.moves());
+                        target.attach(roomIndex, solution.moves());
+                    });
+                } catch (RuntimeException skipped) {
+                }
             }
-            if (!target.solved(index) || solutions.containsKey(index)) {
-                continue;
-            }
-            try {
-                int roomIndex = index;
-                Solver.solve(session.pack().get(index)).ifPresent(solution -> {
-                    solutions.put(roomIndex, solution.moves());
-                    target.attach(roomIndex, solution.moves());
-                });
-            } catch (RuntimeException skipped) {
-            }
+        } finally {
+            passesWalking.decrementAndGet();
         }
+    }
+
+    private boolean abandoned(MenuBoard target) {
+        return !showing || board != target;
     }
 
     @Override
