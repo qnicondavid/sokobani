@@ -11,6 +11,7 @@ import com.milandru.sokobani.persistence.Progress;
 import com.milandru.sokobani.ui.Surface;
 import com.milandru.sokobani.ui.TypeSetter;
 
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.input.KeyEvent;
@@ -69,6 +70,14 @@ public final class GameScreen extends BaseScreen {
     public void onKeyPressed(KeyEvent event) {
         apply(GameControls.commandFor(GameControls.Mode.PLAYING, event.getCode(),
                 event.isShortcutDown() || event.isControlDown()));
+    }
+
+    boolean animating() {
+        return timeline.getStatus() == Animation.Status.RUNNING;
+    }
+
+    Optional<Tween> tweenInFlight() {
+        return tween;
     }
 
     private void apply(GameControls.Command command) {

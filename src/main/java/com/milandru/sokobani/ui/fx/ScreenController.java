@@ -44,6 +44,10 @@ public final class ScreenController {
         screen.shown();
     }
 
+    Screen current() {
+        return current;
+    }
+
     public void handleKey(KeyEvent event) {
         if (current != null) {
             current.onKeyPressed(event);
