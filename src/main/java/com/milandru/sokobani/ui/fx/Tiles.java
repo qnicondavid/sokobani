@@ -16,6 +16,7 @@ public final class Tiles {
     private static final int EDGE_BAND_SPACING = 2;
 
     private static final double FLOOR_DENSITY = 0.012;
+    private static final int FLOOR_HATCH_SPACING = 3;
 
     private static final int GOAL_INNER_RADIUS = 3;
     private static final int GOAL_OUTER_RADIUS = 5;
@@ -70,6 +71,10 @@ public final class Tiles {
 
     public static void floor(Surface surface, int x, int y) {
         surface.stipple(x, y, TILE, TILE, FLOOR_DENSITY, Surface.INK);
+    }
+
+    public static void floorHatched(Surface surface, int x, int y) {
+        surface.hatchDiagonal(x, y, TILE, TILE, FLOOR_HATCH_SPACING, Surface.INK);
     }
 
     public static void goal(Surface surface, int x, int y) {

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -138,6 +139,29 @@ class BoardViewTest {
         }
     }
 
+    @Test
+    void draw_hatchesTheFloorBesideADeadlockedBox() {
+        GameState state = BoardFixture.state(BoardFixture.ONE_PUSH);
+        Level level = state.level();
+        Surface plain = board(state);
+
+        Surface hatched = new Surface(
+                BoardView.width(level.columnCount()), BoardView.height(level.rowCount()));
+        BoardView.draw(hatched, state, 0, 0, Set.of(new Position(1, 2)));
+
+        assertArrayEquals(hatchedFloorTile(hatched, 3, 1), tileAt(hatched, 3, 1));
+        assertFalse(Arrays.equals(tileAt(plain, 3, 1), tileAt(hatched, 3, 1)));
+    }
+
+    @Test
+    void draw_withoutDeadlockedBoxes_neverHatchesTheFloor() {
+        GameState state = BoardFixture.state(BoardFixture.ONE_PUSH);
+        Level level = state.level();
+        Surface surface = board(state);
+
+        assertArrayEquals(bareFloorTile(surface, 3, 1), tileAt(surface, 3, 1));
+    }
+
     private static List<Position> wallsIn(Level level) {
         List<Position> walls = new ArrayList<>();
         for (int row = 0; row < level.rowCount(); row++) {
@@ -159,6 +183,18 @@ class BoardViewTest {
     }
 
     private static void bareFloor(Surface surface, int x, int y) {
+    }
+
+    private static int[] bareFloorTile(Surface surface, int column, int row) {
+        Surface target = new Surface(surface.width(), surface.height());
+        Tiles.floor(target, column * Tiles.TILE, row * Tiles.TILE);
+        return tileAt(target, column, row);
+    }
+
+    private static int[] hatchedFloorTile(Surface surface, int column, int row) {
+        Surface target = new Surface(surface.width(), surface.height());
+        Tiles.floorHatched(target, column * Tiles.TILE, row * Tiles.TILE);
+        return tileAt(target, column, row);
     }
 
     private static Surface board(GameState state) {

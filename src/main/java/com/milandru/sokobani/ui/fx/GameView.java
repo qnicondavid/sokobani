@@ -2,6 +2,8 @@ package com.milandru.sokobani.ui.fx;
 
 import com.milandru.sokobani.core.GameState;
 import com.milandru.sokobani.core.Level;
+import com.milandru.sokobani.core.Position;
+import com.milandru.sokobani.core.Tile;
 import com.milandru.sokobani.engine.GameSession;
 import com.milandru.sokobani.persistence.Progress;
 import com.milandru.sokobani.ui.Surface;
@@ -10,6 +12,7 @@ import com.milandru.sokobani.ui.TypeSetter;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public final class GameView {
 
@@ -24,6 +27,7 @@ public final class GameView {
     private static final String PUSHES = " PUSHES";
     private static final String BEST = "BEST ";
     private static final String BEST_SEPARATOR = " / ";
+    private static final String STUCK_HINT = "NO WAY BACK / UNDO";
 
     private static final int HAIRLINE = 1;
     private static final int TITLE_TOP = 12;
@@ -54,8 +58,15 @@ public final class GameView {
     }
 
     public static Surface render(GameSession session, TypeSetter setter) {
+        return render(session, setter, Set.of(), Optional.empty(), 0);
+    }
+
+    public static Surface render(GameSession session, TypeSetter setter, Set<Position> deadlockedBoxes,
+                                 Optional<Tween> tween, long nowNanos) {
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(setter, "setter");
+        Objects.requireNonNull(deadlockedBoxes, "deadlockedBoxes");
+        Objects.requireNonNull(tween, "tween");
         GameState state = session.state();
         Level level = state.level();
         Surface surface = new Surface(baseWidth(level.columnCount()), baseHeight(level.rowCount()));
@@ -67,8 +78,12 @@ public final class GameView {
                 centreX, Type.baseline(SUBTITLE_TOP, Type.SUBTITLE), Type.SUBTITLE, Surface.INK);
 
         frame(surface, level);
-        BoardView.draw(surface, state, boardOriginX(level.columnCount()), HUD_TOP);
-        counters(surface, setter, session, centreX);
+        int originX = boardOriginX(level.columnCount());
+        BoardView.draw(surface, state, originX, HUD_TOP, deadlockedBoxes);
+        if (tween.isPresent()) {
+            drawTween(surface, level, originX, tween.orElseThrow(), nowNanos);
+        }
+        counters(surface, setter, session, centreX, deadlockedBoxes);
 
         return surface;
     }
@@ -97,18 +112,56 @@ public final class GameView {
                 Surface.INK);
     }
 
-    private static void counters(Surface surface, TypeSetter setter, GameSession session, int centreX) {
+    private static void counters(Surface surface, TypeSetter setter, GameSession session, int centreX,
+                                 Set<Position> deadlockedBoxes) {
         int baseline = Type.baseline(surface.height() - COUNTER_TOP_ABOVE_BOTTOM, Type.COUNTER);
         Type.flushLeft(setter, surface, session.moveCount() + MOVES,
                 COUNTER_INSET, baseline, Type.COUNTER, Surface.INK);
         Type.flushRight(setter, surface, session.pushCount() + PUSHES,
                 surface.width() - COUNTER_INSET, baseline, Type.COUNTER, Surface.INK);
         int bestBaseline = Type.baseline(surface.height() - BEST_TOP_ABOVE_BOTTOM, Type.CAPTION);
-        best(session.progress(), session.levelIndex()).ifPresent(text ->
-                Type.centred(setter, surface, text, centreX, bestBaseline, Type.CAPTION, Surface.INK));
+        if (deadlockedBoxes.isEmpty()) {
+            best(session.progress(), session.levelIndex()).ifPresent(text ->
+                    Type.centred(setter, surface, text, centreX, bestBaseline, Type.CAPTION, Surface.INK));
+        } else {
+            Type.centred(setter, surface, STUCK_HINT, centreX, bestBaseline, Type.CAPTION, Surface.INK);
+        }
     }
 
-    private static void ruleWithFleuron(Surface surface, int centreX, int y) {
+    private static void drawTween(Surface surface, Level level, int originX, Tween tween, long nowNanos) {
+        if (tween.finished(nowNanos)) {
+            return;
+        }
+        double fraction = tween.fraction(nowNanos);
+        restore(surface, level, originX, tween.playerTo());
+        tween.boxTo().ifPresent(to -> restore(surface, level, originX, to));
+        if (tween.boxTo().isPresent()) {
+            Position from = tween.boxFrom().orElseThrow();
+            Position to = tween.boxTo().orElseThrow();
+            int boxX = originX + (int) Math.round(interpolated(from.col(), to.col(), fraction) * Tiles.TILE);
+            int boxY = HUD_TOP + (int) Math.round(interpolated(from.row(), to.row(), fraction) * Tiles.TILE);
+            Tiles.boxOffGoal(surface, boxX, boxY);
+        }
+        int playerX = originX + (int) Math.round(interpolated(tween.playerFrom().col(), tween.playerTo().col(), fraction) * Tiles.TILE);
+        int playerY = HUD_TOP + (int) Math.round(interpolated(tween.playerFrom().row(), tween.playerTo().row(), fraction) * Tiles.TILE);
+        Tiles.player(surface, playerX, playerY);
+    }
+
+    private static double interpolated(int from, int to, double fraction) {
+        return from + (to - from) * fraction;
+    }
+
+    private static void restore(Surface surface, Level level, int originX, Position at) {
+        int x = originX + at.col() * Tiles.TILE;
+        int y = HUD_TOP + at.row() * Tiles.TILE;
+        surface.fill(x, y, Tiles.TILE, Tiles.TILE, Surface.PAPER);
+        Tiles.floor(surface, x, y);
+        if (level.tileAt(at) == Tile.GOAL) {
+            Tiles.goal(surface, x, y);
+        }
+    }
+
+    static void ruleWithFleuron(Surface surface, int centreX, int y) {
         surface.fill(centreX - RULE_WIDTH / 2, y, RULE_WIDTH, HAIRLINE, Surface.INK);
         surface.fill(
                 centreX - FLEURON_HALF_WIDTH - FLEURON_CLEARANCE,

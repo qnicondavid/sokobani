@@ -2,6 +2,7 @@ package com.milandru.sokobani.ui.fx;
 
 import com.milandru.sokobani.core.Direction;
 import com.milandru.sokobani.core.Level;
+import com.milandru.sokobani.core.Position;
 import com.milandru.sokobani.engine.GameSession;
 import com.milandru.sokobani.level.LevelPack;
 import com.milandru.sokobani.ui.Surface;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -92,6 +94,67 @@ class GameViewTest {
                     GameView.render(session, BoardFixture.typeSetter()).tones(),
                     level.name());
         }
+    }
+
+    @Test
+    void render_aFinishedTween_leavesTheSettledBoardExactlyAsItIsWithoutOne() {
+        GameSession session = BoardFixture.session(BoardFixture.ONE_PUSH);
+        session.move(Direction.RIGHT);
+        Tween tween = Tween.ofPush(new Position(1, 1), session.state().player(),
+                new Position(1, 2), boxOf(session), 0L, 100L);
+
+        Surface settled = GameView.render(session, BoardFixture.typeSetter());
+        Surface ended = GameView.render(session, BoardFixture.typeSetter(), Set.of(), Optional.of(tween), 100L);
+
+        assertArrayEquals(settled.tones(), ended.tones());
+    }
+
+    @Test
+    void render_aTweenAtItsLastFrame_alsoLandsOnTheSettledBoard() {
+        GameSession session = BoardFixture.session(BoardFixture.ONE_PUSH);
+        session.move(Direction.RIGHT);
+        Tween tween = Tween.ofPush(new Position(1, 1), session.state().player(),
+                new Position(1, 2), boxOf(session), 0L, 100L);
+
+        Surface settled = GameView.render(session, BoardFixture.typeSetter());
+        Surface almost = GameView.render(session, BoardFixture.typeSetter(), Set.of(), Optional.of(tween), 99L);
+
+        assertArrayEquals(settled.tones(), almost.tones(),
+                "at fraction 0.99 the pieces round onto their destination squares");
+    }
+
+    @Test
+    void render_aTweenAtItsFirstFrame_putsThePiecesBackWhereTheyStarted() {
+        GameSession session = BoardFixture.session(BoardFixture.ONE_PUSH);
+        Surface beforeTheMove = GameView.render(session, BoardFixture.typeSetter());
+        Position playerBefore = session.state().player();
+        Position boxBefore = boxOf(session);
+
+        session.move(Direction.RIGHT);
+        Tween tween = Tween.ofPush(playerBefore, session.state().player(), boxBefore, boxOf(session), 0L, 100L);
+        Surface starting = GameView.render(session, BoardFixture.typeSetter(), Set.of(), Optional.of(tween), 0L);
+        Surface settled = GameView.render(session, BoardFixture.typeSetter());
+
+        assertArrayEquals(boardOf(beforeTheMove), boardOf(starting),
+                "the first frame draws the board exactly as it stood before the move");
+        assertFalse(Arrays.equals(boardOf(settled), boardOf(starting)),
+                "and differently from the settled board, which is the point of animating");
+    }
+
+    private static Position boxOf(GameSession session) {
+        return session.state().boxes().iterator().next();
+    }
+
+    private static int[] boardOf(Surface surface) {
+        int height = surface.height() - GameView.HUD_TOP - GameView.HUD_BOTTOM;
+        int[] board = new int[surface.width() * height];
+        int index = 0;
+        for (int y = GameView.HUD_TOP; y < GameView.HUD_TOP + height; y++) {
+            for (int x = 0; x < surface.width(); x++) {
+                board[index++] = surface.toneAt(x, y);
+            }
+        }
+        return board;
     }
 
     @Test
@@ -187,6 +250,28 @@ class GameViewTest {
 
         assertFalse(inked.isEmpty());
         assertEquals(0, blankRowsBetween(surface, inked));
+    }
+
+    @Test
+    void render_withADeadlockedBox_putsTheStuckHintOnItsOwnRowAboveTheCounters() {
+        GameSession session = BoardFixture.session(BoardFixture.ONE_PUSH);
+        Surface surface = GameView.render(
+                session, BoardFixture.typeSetter(), Set.of(new Position(1, 2)), Optional.empty(), 0);
+        List<Integer> inked = inkedRowsInTheBottomStrip(surface);
+
+        assertFalse(inked.isEmpty());
+        assertTrue(blankRowsBetween(surface, inked) > 0);
+    }
+
+    @Test
+    void render_withADeadlockedBox_differsFromTheSamePositionWithoutOne() {
+        GameSession session = BoardFixture.session(BoardFixture.ONE_PUSH);
+        Set<Position> none = Set.of();
+        Set<Position> stuck = Set.of(new Position(1, 2));
+
+        assertFalse(Arrays.equals(
+                GameView.render(session, BoardFixture.typeSetter(), none, Optional.empty(), 0).tones(),
+                GameView.render(session, BoardFixture.typeSetter(), stuck, Optional.empty(), 0).tones()));
     }
 
     private static List<Integer> inkedRowsInTheBottomStrip(Surface surface) {
