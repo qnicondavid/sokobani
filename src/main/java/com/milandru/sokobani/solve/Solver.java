@@ -1,4 +1,4 @@
-package com.milandru.sokobani.level;
+package com.milandru.sokobani.solve;
 
 import com.milandru.sokobani.core.Direction;
 import com.milandru.sokobani.core.GameState;
@@ -20,14 +20,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-final class Solver {
+public final class Solver {
 
     private static final int STATE_LIMIT = 400_000;
 
     private static final Comparator<Position> READING_ORDER =
             Comparator.comparingInt(Position::row).thenComparingInt(Position::col);
 
-    record Solution(String moves, int pushes) {
+    public record Solution(String moves, int pushes) {
     }
 
     private record Key(Position player, Set<Position> boxes) {
@@ -53,7 +53,7 @@ final class Solver {
     private Solver() {
     }
 
-    static Optional<Solution> solve(Level level) {
+    public static Optional<Solution> solve(Level level) {
         Tile[][] terrain = terrainOf(level);
         Set<Position> dead = deadSquares(level);
         Node start = new Node(level.initialPlayer(), Set.copyOf(level.initialBoxes()), null, null, null);
@@ -116,7 +116,7 @@ final class Solver {
         StringBuilder moves = new StringBuilder();
         for (Node node : chain) {
             moves.append(walk(level, node.parent.boxes, node.parent.player, node.pushFrom));
-            moves.append(Moves.symbolOf(node.push));
+            moves.append(symbolOf(node.push));
         }
         return new Solution(moves.toString(), chain.size());
     }
@@ -143,7 +143,7 @@ final class Solver {
         }
         StringBuilder reversed = new StringBuilder();
         for (Position at = to; !at.equals(from); at = cameFrom.get(at)) {
-            reversed.append(Moves.symbolOf(arrivedBy.get(at)));
+            reversed.append(symbolOf(arrivedBy.get(at)));
         }
         return reversed.reverse().toString();
     }
@@ -207,5 +207,14 @@ final class Solver {
             }
         }
         return terrain;
+    }
+
+    private static char symbolOf(Direction direction) {
+        return switch (direction) {
+            case UP -> 'U';
+            case DOWN -> 'D';
+            case LEFT -> 'L';
+            case RIGHT -> 'R';
+        };
     }
 }

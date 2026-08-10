@@ -1,6 +1,7 @@
 package com.milandru.sokobani.level;
 
 import com.milandru.sokobani.core.Level;
+import com.milandru.sokobani.solve.Solver;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -38,7 +39,7 @@ class SolverTest {
 
         Optional<Solver.Solution> solution = Solver.solve(level);
 
-        assertTrue(Moves.replay(level, solution.orElseThrow().moves()).isSolved());
+        assertTrue(Replay.replay(level, solution.orElseThrow().moves()).isSolved());
     }
 
     @Test
@@ -71,7 +72,7 @@ class SolverTest {
                 #@$.#
                 #####""");
 
-        assertThrows(IllegalStateException.class, () -> Moves.replay(level, "U"));
+        assertThrows(IllegalStateException.class, () -> Replay.replay(level, "U"));
     }
 
     @Test
@@ -81,6 +82,6 @@ class SolverTest {
                 #@$.#
                 #####""");
 
-        assertThrows(IllegalArgumentException.class, () -> Moves.replay(level, "X"));
+        assertThrows(IllegalArgumentException.class, () -> Replay.replay(level, "X"));
     }
 }

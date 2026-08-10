@@ -6,18 +6,9 @@ import com.milandru.sokobani.core.Level;
 import com.milandru.sokobani.core.MoveResult;
 import com.milandru.sokobani.core.SokobanRules;
 
-final class Moves {
+final class Replay {
 
-    private Moves() {
-    }
-
-    static char symbolOf(Direction direction) {
-        return switch (direction) {
-            case UP -> 'U';
-            case DOWN -> 'D';
-            case LEFT -> 'L';
-            case RIGHT -> 'R';
-        };
+    private Replay() {
     }
 
     static Direction directionOf(char symbol) {

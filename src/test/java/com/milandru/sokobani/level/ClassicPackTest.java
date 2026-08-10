@@ -4,6 +4,7 @@ import com.milandru.sokobani.core.Direction;
 import com.milandru.sokobani.core.GameState;
 import com.milandru.sokobani.core.Level;
 import com.milandru.sokobani.core.Position;
+import com.milandru.sokobani.solve.Solver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -126,7 +127,7 @@ class ClassicPackTest {
         Optional<Solver.Solution> solution = Solver.solve(level);
 
         assertTrue(solution.isPresent(), name + " has no solution");
-        assertTrue(Moves.replay(level, solution.get().moves()).isSolved(),
+        assertTrue(Replay.replay(level, solution.get().moves()).isSolved(),
                 name + " was not solved by " + solution.get().moves());
     }
 
