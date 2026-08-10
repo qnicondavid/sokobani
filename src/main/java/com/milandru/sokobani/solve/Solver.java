@@ -17,8 +17,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 public final class Solver {
 
@@ -54,6 +56,11 @@ public final class Solver {
     }
 
     public static Optional<Solution> solve(Level level) {
+        return solve(level, () -> false);
+    }
+
+    public static Optional<Solution> solve(Level level, BooleanSupplier abandoned) {
+        Objects.requireNonNull(abandoned, "abandoned");
         Tile[][] terrain = terrainOf(level);
         Set<Position> dead = deadSquares(level);
         Node start = new Node(level.initialPlayer(), Set.copyOf(level.initialBoxes()), null, null, null);
@@ -68,6 +75,9 @@ public final class Solver {
         int expanded = 0;
 
         while (!frontier.isEmpty()) {
+            if (abandoned.getAsBoolean()) {
+                return Optional.empty();
+            }
             Node node = frontier.remove();
             expanded++;
             if (expanded > STATE_LIMIT) {
@@ -75,7 +85,7 @@ public final class Solver {
                         "solver gave up on " + level.name() + " after " + STATE_LIMIT + " states");
             }
             Set<Position> standing = reachable(level, node.boxes, node.player);
-            for (Position box : node.boxes) {
+            for (Position box : inReadingOrder(node.boxes)) {
                 for (Direction direction : Direction.values()) {
                     Position from = box.moved(direction.opposite());
                     if (!standing.contains(from) || dead.contains(box.moved(direction))) {
@@ -97,6 +107,12 @@ public final class Solver {
             }
         }
         return Optional.empty();
+    }
+
+    private static List<Position> inReadingOrder(Set<Position> boxes) {
+        List<Position> ordered = new ArrayList<>(boxes);
+        ordered.sort(READING_ORDER);
+        return ordered;
     }
 
     private static Optional<GameState> push(

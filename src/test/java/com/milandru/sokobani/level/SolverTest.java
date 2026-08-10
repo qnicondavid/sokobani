@@ -4,6 +4,7 @@ import com.milandru.sokobani.core.Level;
 import com.milandru.sokobani.solve.Solver;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -63,6 +64,34 @@ class SolverTest {
                 #######""");
 
         assertTrue(Solver.solve(level).isEmpty());
+    }
+
+    @Test
+    void solve_theFirstBundledRooms_answerTheMovesAReadingOrderExpansionPicks() throws Exception {
+        LevelPack pack = LevelRepository.load(LevelRepository.CLASSIC_PACK);
+        Map<Integer, String> expansionInReadingOrder = Map.of(
+                0, "RRR",
+                1, "URR",
+                2, "LULUURDURRD",
+                3, "LULURDDRRRURUL",
+                4, "UUURRDLRDDDLLURDRRUULDLDR",
+                6, "DRURDLDL",
+                7, "DRDRRUULDLLURDRRDL",
+                8, "LUULDRDRURURDLDLLLRRRR");
+
+        expansionInReadingOrder.forEach((index, moves) ->
+                assertEquals(moves, Solver.solve(pack.get(index)).orElseThrow().moves(),
+                        pack.get(index).name() + " was solved by a different route than reading order picks"));
+    }
+
+    @Test
+    void solve_theSameRoomInTheSameRun_answersTheSameMoves() throws Exception {
+        LevelPack pack = LevelRepository.load(LevelRepository.CLASSIC_PACK);
+
+        for (int index = 0; index < 8; index++) {
+            assertEquals(Solver.solve(pack.get(index)).orElseThrow().moves(),
+                    Solver.solve(pack.get(index)).orElseThrow().moves(), pack.get(index).name());
+        }
     }
 
     @Test
