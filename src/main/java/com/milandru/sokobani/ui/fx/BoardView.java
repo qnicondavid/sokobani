@@ -81,7 +81,7 @@ public final class BoardView {
         }
     }
 
-    private static Set<Position> hatchedAround(Level level, Set<Position> deadlockedBoxes) {
+    static Set<Position> hatchedAround(Level level, Set<Position> deadlockedBoxes) {
         if (deadlockedBoxes.isEmpty()) {
             return Set.of();
         }

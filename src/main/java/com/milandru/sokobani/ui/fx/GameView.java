@@ -81,7 +81,8 @@ public final class GameView {
         int originX = boardOriginX(level.columnCount());
         BoardView.draw(surface, state, originX, HUD_TOP, deadlockedBoxes);
         if (tween.isPresent()) {
-            drawTween(surface, level, originX, tween.orElseThrow(), nowNanos);
+            drawTween(surface, level, originX, tween.orElseThrow(), nowNanos,
+                    BoardView.hatchedAround(level, deadlockedBoxes));
         }
         counters(surface, setter, session, centreX, deadlockedBoxes);
 
@@ -128,13 +129,14 @@ public final class GameView {
         }
     }
 
-    private static void drawTween(Surface surface, Level level, int originX, Tween tween, long nowNanos) {
+    private static void drawTween(Surface surface, Level level, int originX, Tween tween, long nowNanos,
+                                  Set<Position> hatched) {
         if (tween.finished(nowNanos)) {
             return;
         }
         double fraction = tween.fraction(nowNanos);
-        restore(surface, level, originX, tween.playerTo());
-        tween.boxTo().ifPresent(to -> restore(surface, level, originX, to));
+        restore(surface, level, originX, tween.playerTo(), hatched);
+        tween.boxTo().ifPresent(to -> restore(surface, level, originX, to, hatched));
         if (tween.boxTo().isPresent()) {
             Position from = tween.boxFrom().orElseThrow();
             Position to = tween.boxTo().orElseThrow();
@@ -151,11 +153,15 @@ public final class GameView {
         return from + (to - from) * fraction;
     }
 
-    private static void restore(Surface surface, Level level, int originX, Position at) {
+    private static void restore(Surface surface, Level level, int originX, Position at, Set<Position> hatched) {
         int x = originX + at.col() * Tiles.TILE;
         int y = HUD_TOP + at.row() * Tiles.TILE;
         surface.fill(x, y, Tiles.TILE, Tiles.TILE, Surface.PAPER);
-        Tiles.floor(surface, x, y);
+        if (hatched.contains(at)) {
+            Tiles.floorHatched(surface, x, y);
+        } else {
+            Tiles.floor(surface, x, y);
+        }
         if (level.tileAt(at) == Tile.GOAL) {
             Tiles.goal(surface, x, y);
         }
