@@ -13,6 +13,7 @@ public final class Type {
     public static final Style COUNTER = new Style(12, 1.0);
     public static final Style CAPTION = new Style(10, 0.8);
     public static final Style FIGURE = new Style(17, 0.0);
+    public static final Style WIN_FIGURE = new Style(18, 0.0);
 
     private static final double CAP_HEIGHT_RATIO = 0.75;
 
