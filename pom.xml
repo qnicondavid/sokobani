@@ -33,6 +33,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>22</javafx.version>
+        <monocle.version>21.0.2</monocle.version>
         <junit.version>5.11.4</junit.version>
         <surefire.version>3.5.2</surefire.version>
         <enforcer.version>3.5.0</enforcer.version>
@@ -63,6 +64,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <version>${monocle.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -84,6 +92,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <glass.platform>Monocle</glass.platform>
+                        <monocle.platform>Headless</monocle.platform>
+                        <prism.order>sw</prism.order>
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
 
             <plugin>
