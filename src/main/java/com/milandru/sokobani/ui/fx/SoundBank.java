@@ -10,22 +10,27 @@ import java.util.Optional;
 
 final class SoundBank {
 
-    private final Optional<Clip> move;
-    private final Optional<Clip> push;
-    private final Optional<Clip> goal;
-    private final Optional<Clip> solved;
-    private boolean muted;
+    private static final String LOADER_THREAD_NAME = "sokobani-sound-bank";
 
-    SoundBank(boolean muted) {
+    private volatile Optional<Clip> move = Optional.empty();
+    private volatile Optional<Clip> push = Optional.empty();
+    private volatile Optional<Clip> goal = Optional.empty();
+    private volatile Optional<Clip> solved = Optional.empty();
+    private volatile Thread openedOn;
+    private volatile boolean muted;
+
+    private Thread loader;
+
+    private SoundBank(boolean muted) {
         this.muted = muted;
-        this.move = load("move.wav");
-        this.push = load("push.wav");
-        this.goal = load("goal.wav");
-        this.solved = load("solved.wav");
     }
 
     static SoundBank load(boolean muted) {
-        return new SoundBank(muted);
+        SoundBank bank = new SoundBank(muted);
+        bank.loader = new Thread(bank::open, LOADER_THREAD_NAME);
+        bank.loader.setDaemon(true);
+        bank.loader.start();
+        return bank;
     }
 
     void setMuted(boolean muted) {
@@ -37,6 +42,18 @@ final class SoundBank {
 
     boolean muted() {
         return muted;
+    }
+
+    boolean finishedOpening() {
+        return openedOn != null;
+    }
+
+    Thread openedOn() {
+        return openedOn;
+    }
+
+    Thread loader() {
+        return loader;
     }
 
     void move() {
@@ -55,7 +72,15 @@ final class SoundBank {
         play(solved);
     }
 
-    private static Optional<Clip> load(String resource) {
+    private void open() {
+        move = clipFrom("move.wav");
+        push = clipFrom("push.wav");
+        goal = clipFrom("goal.wav");
+        solved = clipFrom("solved.wav");
+        openedOn = Thread.currentThread();
+    }
+
+    private static Optional<Clip> clipFrom(String resource) {
         try (InputStream stream = SoundBank.class.getResourceAsStream("/sound/" + resource)) {
             if (stream == null) {
                 return Optional.empty();
