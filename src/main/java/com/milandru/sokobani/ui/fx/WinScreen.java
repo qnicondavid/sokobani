@@ -10,6 +10,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public final class WinScreen extends BaseScreen {
 
@@ -17,6 +18,7 @@ public final class WinScreen extends BaseScreen {
     private final TypeSetter setter;
     private final Screens screens;
 
+    private Optional<WinData> presented = Optional.empty();
     private WinData data;
 
     public WinScreen(GameSession session, TypeSetter setter, ScreenController controller, Screens screens) {
@@ -28,17 +30,20 @@ public final class WinScreen extends BaseScreen {
     }
 
     void present(WinData data) {
-        this.data = data;
+        this.presented = Optional.of(data);
     }
 
     @Override
     public void shown() {
-        if (data == null) {
-            data = new WinData(
-                    new GameEvent.Solved(session.currentLevel(), session.moveCount(), session.pushCount()),
-                    session.progress().levelRecord(session.levelIndex()).filter(Progress.LevelRecord::solved));
-        }
+        data = presented.orElseGet(this::fromTheSession);
+        presented = Optional.empty();
         redraw();
+    }
+
+    private WinData fromTheSession() {
+        return new WinData(
+                new GameEvent.Solved(session.currentLevel(), session.moveCount(), session.pushCount()),
+                session.progress().levelRecord(session.levelIndex()).filter(Progress.LevelRecord::solved));
     }
 
     @Override
