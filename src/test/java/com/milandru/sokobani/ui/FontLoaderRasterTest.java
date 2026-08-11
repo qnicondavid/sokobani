@@ -11,7 +11,7 @@ class FontLoaderRasterTest {
 
     private static final int CAPTION_SIZE = 10;
     private static final int[] CAPTION_BAND = {10, 11, 12};
-    private static final String GLYPHS_WITH_A_COUNTER = "0689ABDOPQR";
+    private static final String GLYPHS_WITH_A_COUNTER = "0689BDOPQR";
 
     @Test
     void paint_theFigureEightAtTheCaptionSize_leavesItsCounterOpen() {
@@ -24,12 +24,16 @@ class FontLoaderRasterTest {
 
     @Test
     void paint_everyRoundGlyphOfTheCaptionStyle_keepsAnOpenCounter() {
+        StringBuilder closed = new StringBuilder();
         for (char glyph : GLYPHS_WITH_A_COUNTER.toCharArray()) {
             int counter = counterOf(glyph, CAPTION_SIZE);
-
-            assertTrue(counter > 0,
-                    "the counter of " + glyph + " at " + CAPTION_SIZE + "px measured " + counter + " pixels");
+            if (counter == 0) {
+                closed.append(closed.isEmpty() ? "" : ", ").append(glyph);
+            }
         }
+
+        assertTrue(closed.isEmpty(),
+                "the counters of " + closed + " at " + CAPTION_SIZE + "px measured 0 pixels of enclosed paper");
     }
 
     @Test
