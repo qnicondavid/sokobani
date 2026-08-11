@@ -1,17 +1,23 @@
-# Sokobani
+<h1 align="center">Sokobani</h1>
 
-A complete Sokoban game in Java. Push every box onto a goal in each of 100 rooms, and try to do it in as few moves as possible.
+<p align="center">
+A Sokoban game in Java. Push every box onto a goal in each of 100 rooms,<br>
+in as few moves as you can manage.
+</p>
 
-![Sokobani](docs/demo.gif)
+<p align="center">
+  <img src="docs/demo.gif" width="70%" alt="Solving room 45, including an undo and the win screen">
+</p>
 
-[![CI](https://github.com/qnicondavid/sokobani/actions/workflows/ci.yml/badge.svg)](https://github.com/qnicondavid/sokobani/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Java 21](https://img.shields.io/badge/java-21-orange.svg)](https://adoptium.net)
+<p align="center">
+  <a href="https://github.com/qnicondavid/sokobani/actions/workflows/ci.yml"><img src="https://github.com/qnicondavid/sokobani/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://adoptium.net"><img src="https://img.shields.io/badge/java-21-orange.svg" alt="Java 21"></a>
+</p>
 
-Sokobani ships two interfaces that share one engine:
-
-- **Desktop app** (JavaFX): a canvas-rendered game with four themes, animations, sound effects, deadlock hints and a built-in solver.
-- **Console game**: the same rules, undo history and progress tracking behind a text interface.
+Two front ends sit on one engine. The desktop app is JavaFX, drawn on a canvas, with four themes,
+animation, sound and deadlock hints. The console game is the same engine behind a text interface:
+same rules, same undo history, same progress file.
 
 ## Features
 
@@ -28,7 +34,7 @@ Sokobani ships two interfaces that share one engine:
 ## Requirements
 
 - Java 21 (the build enforces `[21,22)`)
-- Maven — built and tested with 3.9
+- Maven, built and tested with 3.9
 
 ## Build and run
 
@@ -70,6 +76,22 @@ mvn -B exec:java@console     # console game
 | `T` | cycle theme |
 | `PgUp` / `PgDn` (or `Ctrl+W` / `Ctrl+S`, `Cmd` on macOS) | page through the room list |
 
+## Themes
+
+<p align="center">
+  <img src="docs/theme-catalogue.png" width="45%" alt="Catalogue: dark brown ink on cream paper">
+  <img src="docs/theme-cyanotype.png" width="45%" alt="Cyanotype: pale blue on deep navy">
+</p>
+
+<p align="center">
+  <img src="docs/theme-bulletin.png" width="45%" alt="Bulletin: red ink on off-white paper">
+  <img src="docs/theme-phosphor.png" width="45%" alt="Phosphor: green on near-black">
+</p>
+
+The same room in all four. Every screen is drawn once into a single buffer, thresholded to two
+colours, then blitted at an integer scale. So a theme is two numbers, the ink and the paper in
+`Theme.java`, and switching them cannot move a pixel. Those four images differ in nothing else.
+
 ## Level format
 
 Packs are plain text in the XSB format that Sokoban levels have used for decades. A line beginning
@@ -94,7 +116,7 @@ with `;` names the room that follows; a blank line ends it.
 
 The bundled pack is `src/main/resources/levels/classic.sok`. To play your own, drop a `.sok` file
 beside it and point `LevelRepository.CLASSIC_PACK` at it. Rooms do not need a rectangular wall
-border — the parser floods outwards from the player and rejects a room only if that flood escapes.
+border. The parser floods outwards from the player and rejects a room only if that flood escapes.
 
 ## Console mode
 
@@ -202,45 +224,45 @@ flowchart TD
     solve --> core
 ```
 
-Every arrow is an import that exists; nothing is drawn for shape, and nothing real is left out.
-`solve` hangs off `ui.fx` alone — `Solver` is imported by exactly one production file outside its own
-package, `MenuScreen` — which is what "the solver drives the menu replay and nothing else" means.
+Every arrow is a real import, and none are missing. `solve` hangs off `ui.fx` alone because `Solver`
+is imported by exactly one production file outside its own package, `MenuScreen`. So the solver
+drives the menu replay and nothing else.
 
 `core`, `level`, `engine`, `persistence` and `solve` contain no `javafx` import at all, and compile
-and run with none on the classpath. Outside `ui.fx` exactly two files touch the JavaFX canvas —
-`ui.Display` and `ui.FontLoader` — and the console front end imports neither, so the whole text
-interface runs on a JavaFX-free path.
+and run with none on the classpath. Outside `ui.fx`, exactly two files touch the JavaFX canvas:
+`ui.Display` and `ui.FontLoader`. The console front end imports neither, so the whole text interface
+runs on a JavaFX-free path.
 
-That split is what makes the rules testable without a screen, and it is why the same `GameSession`
+That split is what lets the rules be tested without a screen. It is also why the same `GameSession`
 drives both front ends. The renderer draws every screen into one off-screen pixel buffer, thresholds
 it to two colours and blits it at an integer scale, so a frame is an array of ints that a test can
 assert on directly.
 
 The solver is a breadth-first search over pushes. Breadth-first is what makes the push count
-optimal, which is why the pack can be ordered by difficulty and why every room's solution is trusted
-as a lower bound. Deadlock detection is separate and does not use it: `core.Deadlock` is
-geometry-only — a box wedged between two orthogonal walls, or a box on a wall run sealed at both ends
-with no goal on it — so it is cheap enough to run every frame. It is a hint rather than a rule: it
-never flags a box that could still reach a goal, but it will flag one that can still be pushed along
-a dead corridor, and it misses any deadlock that only becomes one two pushes later.
+optimal, so the pack can be ordered by difficulty and every room's solution is a real lower bound.
+Deadlock detection is separate and does not use it. `core.Deadlock` works on geometry alone: a box
+wedged between two orthogonal walls, or a box on a wall run sealed at both ends with no goal on it.
+That makes it cheap enough to run every frame. It is a hint, not a rule. It never flags a box that
+could still reach a goal, but it will flag one that can still be pushed along a dead corridor, and
+it misses any deadlock that only becomes one two pushes later.
 
 ## Tests
 
 `mvn -B clean verify` runs 1485 tests across 63 classes on Linux, macOS and Windows.
 
 The JavaFX layer is tested headless through Monocle rather than skipped, so the screens, the input
-routing, the tween, the sound bank and the glyph rasteriser are all exercised in CI — including
-pixel-level assertions that a single base pixel blits to an exact N×N block of one colour, and that
-a rendered frame contains exactly two distinct colour values.
+routing, the tween, the sound bank and the glyph rasteriser all run in CI. Some of it is asserted at
+the pixel level: that a single base pixel blits to an exact N×N block of one colour, and that a
+rendered frame contains exactly two distinct colour values.
 
-The suite also solves all 100 bundled rooms on every run, which is how each one is verified solvable
+The suite also solves all 100 bundled rooms on every run. That is how each one is verified solvable,
 and how its optimal push count is checked.
 
 ## Where the levels came from
 
-Fifteen rooms are hand-made; the other eighty-five were generated for this project across ten
-terrain families and selected by crate count, size and optimal push count, and every one of the
-hundred is verified solvable by the repository's own solver on every test run.
+Fifteen rooms are hand-made. The other eighty-five were generated for this project across ten
+terrain families, then selected by crate count, size and optimal push count. All hundred are
+verified solvable by the repository's own solver on every test run.
 
 ## Origin
 
@@ -252,7 +274,7 @@ The graphics, sounds, text rendering and code are original to this project.
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
 
 The bundled typeface is [Roboto Slab](https://fonts.google.com/specimen/Roboto+Slab), used under the
 Apache License 2.0; its licence travels with it in
