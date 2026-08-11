@@ -6,7 +6,7 @@ in as few moves as you can manage.
 </p>
 
 <p align="center">
-  <img src="docs/demo.gif" width="70%" alt="Solving room 45, including an undo and the win screen">
+  <img src="docs/demo.gif" width="70%" alt="Solving room 45 through all four themes, including an undo and the win screen">
 </p>
 
 <p align="center">
