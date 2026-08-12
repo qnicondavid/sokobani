@@ -11,7 +11,7 @@ public final class Type {
     public static final Style TITLE = new Style(20, 2.6);
     public static final Style SUBTITLE = new Style(11, 2.0);
     public static final Style COUNTER = new Style(12, 1.0);
-    public static final Style CAPTION = new Style(10, 0.8);
+    public static final Style CAPTION = new Style(10, 1.7);
     public static final Style FIGURE = new Style(17, 0.0);
     public static final Style WIN_FIGURE = new Style(18, 0.0);
 

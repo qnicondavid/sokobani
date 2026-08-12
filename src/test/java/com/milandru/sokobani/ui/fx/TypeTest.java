@@ -34,7 +34,7 @@ class TypeTest {
         assertEquals(new Type.Style(20, 2.6), Type.TITLE);
         assertEquals(new Type.Style(11, 2.0), Type.SUBTITLE);
         assertEquals(new Type.Style(12, 1.0), Type.COUNTER);
-        assertEquals(new Type.Style(10, 0.8), Type.CAPTION);
+        assertEquals(new Type.Style(10, 1.7), Type.CAPTION);
         assertEquals(new Type.Style(17, 0.0), Type.FIGURE);
     }
 
