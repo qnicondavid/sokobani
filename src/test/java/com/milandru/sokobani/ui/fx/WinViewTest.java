@@ -3,6 +3,7 @@ package com.milandru.sokobani.ui.fx;
 import com.milandru.sokobani.engine.GameEvent;
 import com.milandru.sokobani.persistence.Progress;
 import com.milandru.sokobani.ui.Surface;
+import com.milandru.sokobani.ui.Threshold;
 
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +49,19 @@ class WinViewTest {
     }
 
     @Test
+    void theCaptionRows_clearTheDividerAndStayInsideThePanel() {
+        Surface surface = win(true, Optional.of(new Progress.LevelRecord(true, 999, 999)));
+
+        assertEquals(0, inkIn(surface, 117, 126, 8, 8));
+        assertEquals(0, inkIn(surface, 126, 126, 8, 8));
+        assertTrue(inkIn(surface, 29, 126, 88, 8) > 0);
+        assertTrue(inkIn(surface, 134, 126, 87, 8) > 0);
+        assertEquals(0, inkIn(surface, 29, 144, 20, 10));
+        assertEquals(0, inkIn(surface, 201, 144, 20, 10));
+        assertTrue(inkIn(surface, 49, 144, 152, 10) > 0);
+    }
+
+    @Test
     void targetAt_answersTheClickTargets() {
         assertEquals(WinView.Target.NEXT_ROOM, WinView.targetAt(60, 170, true));
         assertEquals(WinView.Target.NEXT_ROOM, WinView.targetAt(200, 170, true));
@@ -74,6 +88,18 @@ class WinViewTest {
         for (int x = fromX; x < toX; x++) {
             if (surface.toneAt(x, y) == Surface.INK) {
                 count++;
+            }
+        }
+        return count;
+    }
+
+    private static int inkIn(Surface surface, int x, int y, int width, int height) {
+        int count = 0;
+        for (int row = y; row < y + height; row++) {
+            for (int column = x; column < x + width; column++) {
+                if (Threshold.isInk(surface.toneAt(column, row))) {
+                    count++;
+                }
             }
         }
         return count;

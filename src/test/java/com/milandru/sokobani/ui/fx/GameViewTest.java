@@ -264,6 +264,19 @@ class GameViewTest {
     }
 
     @Test
+    void render_theWidestCaptionRow_clearsBothEdgesOfTheNarrowestSurface() {
+        GameSession session = BoardFixture.session(BoardFixture.ONE_PUSH);
+        Surface surface = GameView.render(
+                session, BoardFixture.typeSetter(), Set.of(new Position(1, 2)), Optional.empty(), 0);
+        int top = surface.height() - 38;
+
+        assertEquals(GameView.MIN_BASE_WIDTH, surface.width());
+        assertEquals(0, inkIn(surface, 0, top, 40, 8));
+        assertEquals(0, inkIn(surface, surface.width() - 40, top, 40, 8));
+        assertTrue(inkIn(surface, 40, top, surface.width() - 80, 8) > 0);
+    }
+
+    @Test
     void render_withADeadlockedBox_differsFromTheSamePositionWithoutOne() {
         GameSession session = BoardFixture.session(BoardFixture.ONE_PUSH);
         Set<Position> none = Set.of();
