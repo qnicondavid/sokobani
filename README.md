@@ -1,4 +1,4 @@
-<h1 align="center">Sokobani</h1>
+﻿<h1 align="center">Sokobani</h1>
 
 <p align="center">
 A Sokoban game in Java. Push every box onto a goal in each of 100 rooms,<br>
@@ -47,7 +47,7 @@ mvn -B javafx:run
 Other entry points:
 
 ```bash
-mvn -B clean verify          # compile and run the full test suite (1485 tests)
+mvn -B clean verify          # compile and run the full test suite (1487 tests)
 mvn -B exec:java@console     # console game
 ```
 
@@ -248,11 +248,11 @@ it misses any deadlock that only becomes one two pushes later.
 
 ## Tests
 
-`mvn -B clean verify` runs 1485 tests across 63 classes on Linux, macOS and Windows.
+`mvn -B clean verify` runs 1487 tests across 63 classes on Linux, macOS and Windows.
 
 The JavaFX layer is tested headless through Monocle rather than skipped, so the screens, the input
 routing, the tween, the sound bank and the glyph rasteriser all run in CI. Some of it is asserted at
-the pixel level: that a single base pixel blits to an exact N×N block of one colour, and that a
+the pixel level: that a single base pixel blits to an exact NÃ—N block of one colour, and that a
 rendered frame contains exactly two distinct colour values.
 
 The suite also solves all 100 bundled rooms on every run. That is how each one is verified solvable,
